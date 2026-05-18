@@ -1,9 +1,12 @@
 import BoardCard from '@/components/BoardCard';
+import BoardMenuModal from '@/components/BoardMenuModal';
+import CreateBoardModal from '@/components/CreateBoardModal';
 import { useBoardStore } from '@/store/useBoardStore';
 import { Board } from '@/types/types';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -29,9 +32,43 @@ export default function Home() {
   
   const boards = getFilteredBoards();
 
+  const handleCreateBoard = (title: string, icon: string, color: string) => {
+    const newBoard: Board = {
+      id: Date.now().toString(),
+      title,
+      icon,
+      color,
+      columnIds: [],
+      taskCount: 0,
+      updatedAt: new Date().toString(),
+      description: '',
+    };
+    addBoard(newBoard);
+  }
+
   const handleMenuPress = (board: Board) => {
     setSelectedBoard(board);
     setMenuModalVisible(true);
+  }
+
+  const handleDeleteBoard = (board: Board) => {
+    Alert.alert(
+      'Deleted Board',
+      `Are you sure you want to delete "${board.title}"? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteBoard(board.id),
+        },
+      ]
+    );
+  };
+
+  const handleEditBoard = (board: Board) => {
+    // TODO: Implement edit functionality
+    Alert.alert('Edit Board', 'Edit functionality coming soon!');
   }
 
   return (
@@ -64,7 +101,10 @@ export default function Home() {
             )}
         </View>
         {/*Create new board button*/}
-        <TouchableOpacity style={styles.createButton}>
+        <TouchableOpacity 
+            style={styles.createButton}
+            onPress={() => setCreateModalVisible(true)}
+        >
             <Ionicons name='add' size={24} color="#fff"/>
             <Text style={styles.createButtonText}>Create New Board</Text>
         </TouchableOpacity>
@@ -96,9 +136,7 @@ export default function Home() {
                         ...item,
                         taskCount: getBoardTaskCount(item.id)
                       }}
-                      onMenuPress={(board) => {
-                        console.log('Menu pressed:', board.id)
-                      }}
+                      onMenuPress={handleMenuPress}
                     />
                   )}
                   contentContainerStyle={styles.listContent}
@@ -106,6 +144,24 @@ export default function Home() {
                 />
             )}
         </View>
+
+        {/*Modal*/}
+        <CreateBoardModal
+          visible={createModalVisible}
+          onClose={() => {
+            console.log('onClose called, closing modal');
+            setCreateModalVisible(false);
+          }}
+          onSave={handleCreateBoard}
+        />
+
+        <BoardMenuModal
+          visible={menuModalVisible}
+          board={selectedBoard}
+          onClose={() => setMenuModalVisible(false)}
+          onEdit={handleEditBoard}
+          onDelete={handleDeleteBoard}
+        />
     </SafeAreaView>
   )
 }

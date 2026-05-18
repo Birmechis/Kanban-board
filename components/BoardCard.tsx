@@ -46,30 +46,50 @@ export default function BoardCard({ board, onMenuPress}: BoardCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   content: {
-
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   iconContainer: {
-
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   icon: {
-
+    fontSize: 24,
   },
-  info:{
-
+  info: {
+    flex: 1,
   },
-  title:{
-
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
   },
   taskCount: {
-
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
   },
   updated: {
-
+    fontSize: 12,
+    color: '#999',
   },
   menuButton: {
-
+    padding: 4,
   },
-})
+});
