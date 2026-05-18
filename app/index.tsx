@@ -7,7 +7,7 @@ export default function Index() {
       <Text>Kanban Board</Text>
       <Button
         title="Open Board"
-        onPress={() => router.push("/board/1")}
+        onPress={() => router.push("/(tabs)")}
       ></Button>
     </View>
   );

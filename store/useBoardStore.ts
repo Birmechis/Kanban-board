@@ -24,7 +24,7 @@ type BoardState = {
   getFilteredBoards: () => Board[];
 
   //helpers
-  getBoardsTaskCount: (boardId: string) => number;
+  getBoardTaskCount: (boardId: string) => number;
 };
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -97,7 +97,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
   }, 
-    getBoardsTaskCount: (boardId) => {
+    getBoardTaskCount: (boardId) => {
       const state = get();
       const board = state.boards[boardId];
       if(!board) return 0;

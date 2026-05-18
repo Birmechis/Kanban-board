@@ -17,6 +17,6 @@ export type Board = {
   updatedAt: string;
   description: string;
   color: string;
-  taskCount: string;
+  taskCount: number;
   icon: string;
 };
