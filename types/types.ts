@@ -9,3 +9,14 @@ export type Column = {
   title: string;
   taskIds: string[];
 };
+
+export type Board = {
+  id: string;
+  title: string;
+  columnIds: string[];
+  updatedAt: string;
+  description: string;
+  color: string;
+  taskCount: string;
+  icon: string;
+};

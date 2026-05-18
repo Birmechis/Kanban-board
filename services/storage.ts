@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Column, Task } from "../types/types";
+import { Board, Column, Task } from "../types/types";
 
 type BoardState = {
+  boards: Record<string, Board>;
   columns: Record<string, Column>;
   tasks: Record<string, Task>;
 };
