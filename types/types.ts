@@ -20,3 +20,18 @@ export type Board = {
   taskCount: number;
   icon: string;
 };
+export type User = {
+  id: string;
+  email: string;
+  name: string;
+  token?: string;
+}
+export type LoginCredentials = {
+  email: string;
+  password: string;
+};
+export type AuthState = {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}

@@ -1,10 +1,11 @@
 import BoardCard from '@/components/BoardCard';
 import BoardMenuModal from '@/components/BoardMenuModal';
 import CreateBoardModal from '@/components/CreateBoardModal';
+import EditBoardModal from '@/components/EditBoardModal';
 import { useBoardStore } from '@/store/useBoardStore';
 import { Board } from '@/types/types';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -18,19 +19,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Home() {
   const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [menuModalVisible, setMenuModalVisible] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
 
-  const {
-    addBoard,
-    deleteBoard,
-    searchQuery,
-    setSearchQuery,
-    getFilteredBoards,
-    getBoardTaskCount,
-  } = useBoardStore();
+  // Use selective subscriptions to ensure proper re-renders
+  const allBoards = useBoardStore((state) => state.boards);
+  const boardsVersion = useBoardStore((state) => state.boardsVersion);
+  const searchQuery = useBoardStore((state) => state.searchQuery);
+  const setSearchQuery = useBoardStore((state) => state.setSearchQuery);
+  const addBoard = useBoardStore((state) => state.addBoard);
+  const updateBoard = useBoardStore((state) => state.updateBoard);
+  const deleteBoard = useBoardStore((state) => state.deleteBoard);
+  const getBoardTaskCount = useBoardStore((state) => state.getBoardTaskCount);
   
-  const boards = getFilteredBoards();
+  console.log('Component render - boardsVersion:', boardsVersion, 'boards count:', Object.keys(allBoards).length);
+  
+  const boards = useMemo(() => {
+    const boardsArray = Object.values(allBoards);
+    console.log('===== useMemo recalculating =====');
+    console.log('Boards count:', boardsArray.length);
+    console.log('Boards version:', boardsVersion);
+    console.log('Board IDs:', boardsArray.map(b => b.id));
+    console.log('================================');
+    
+    if (!searchQuery) {
+      return boardsArray.sort((a, b) => 
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+    }
+    
+    return boardsArray
+      .filter((board) => 
+        board.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) => 
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+  }, [allBoards, searchQuery, boardsVersion]);
 
   const handleCreateBoard = (title: string, icon: string, color: string) => {
     const newBoard: Board = {
@@ -40,35 +66,49 @@ export default function Home() {
       color,
       columnIds: [],
       taskCount: 0,
-      updatedAt: new Date().toString(),
+      updatedAt: new Date().toISOString(),
       description: '',
     };
     addBoard(newBoard);
   }
 
-  const handleMenuPress = (board: Board) => {
+  const handleEditBoard = (board: Board) => {
     setSelectedBoard(board);
-    setMenuModalVisible(true);
+    setMenuModalVisible(false);
+    setEditModalVisible(true);
+  }
+
+  const handleUpdateBoard = (boardId: string, title: string, icon: string, color: string) => {
+    console.log('Updating board:', boardId, 'with title:', title);
+    updateBoard(boardId, { title, icon, color });
+    console.log('Board updated in store');
+    setEditModalVisible(false); // Close modal after update
   }
 
   const handleDeleteBoard = (board: Board) => {
+    console.log('handleDeleteBoard called for:', board.id, board.title);
+    setMenuModalVisible(false);
     Alert.alert(
-      'Deleted Board',
+      'Delete Board',
       `Are you sure you want to delete "${board.title}"? This action cannot be undone.`,
       [
-        { text: 'Cancel', style: 'cancel'},
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => deleteBoard(board.id),
+          onPress: () => {
+            console.log('Delete confirmed, calling deleteBoard');
+            deleteBoard(board.id);
+            console.log('deleteBoard completed');
+          },
         },
       ]
     );
   };
 
-  const handleEditBoard = (board: Board) => {
-    // TODO: Implement edit functionality
-    Alert.alert('Edit Board', 'Edit functionality coming soon!');
+  const handleMenuPress = (board: Board) => {
+    setSelectedBoard(board);
+    setMenuModalVisible(true);
   }
 
   return (
@@ -145,14 +185,18 @@ export default function Home() {
             )}
         </View>
 
-        {/*Modal*/}
+        {/*Modals*/}
         <CreateBoardModal
           visible={createModalVisible}
-          onClose={() => {
-            console.log('onClose called, closing modal');
-            setCreateModalVisible(false);
-          }}
+          onClose={() => setCreateModalVisible(false)}
           onSave={handleCreateBoard}
+        />
+
+        <EditBoardModal
+          visible={editModalVisible}
+          board={selectedBoard}
+          onClose={() => setEditModalVisible(false)}
+          onSave={handleUpdateBoard}
         />
 
         <BoardMenuModal

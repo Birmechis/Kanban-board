@@ -38,8 +38,8 @@ export default function BoardMenuModal({
             <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() => {
+                    console.log('Edit pressed');
                     onEdit(board);
-                    onClose();
                 }}
             >
                 <Ionicons name='create-outline' size={22} color='#000'/>
@@ -51,11 +51,11 @@ export default function BoardMenuModal({
             <TouchableOpacity
                style={styles.menuItem}
                onPress={() => {
+                console.log('Delete pressed');
                 onDelete(board);
-                onClose();
                }}
             >
-                <Ionicons name='trash-outline' size={22} close='#ef4444'/>
+                <Ionicons name='trash-outline' size={22} color='#ef4444'/>
                 <Text style={[styles.menuText, styles.deleteText]}>Delete Board</Text>
             </TouchableOpacity>
         </View>
