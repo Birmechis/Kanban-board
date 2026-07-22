@@ -19,7 +19,11 @@ export const authService = {
             
             await AsyncStorage.setItem(AUth_TOKEN_KEY, user.token!)
             await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(user))
+
+            return user;
         }
+
+       throw new Error("Invalid email or password");
     },
 
     async getStoreUser(): Promise<User | any> {
