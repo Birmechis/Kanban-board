@@ -15,6 +15,11 @@ type BoardState = {
   updateBoard: (boardId: string, updates: Partial<Board>) => void
   deleteBoard: (boardId: string) => void
   setSelectedBoard: (boardId: string) => void;
+  
+  //column actions
+  addColumn: (column: Column) => void;
+  updateColumn: (columnId: string, updates: Partial<Column>) => void;
+  deleteColumn: (columnId: string) => void;
 
   //task actions
   addTask: (task: Task) => void;
@@ -37,10 +42,52 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   boardsVersion: 0,
 
   addBoard: (board) =>
-    set((state) => ({
-      boards: { ...state.boards, [board.id]: board },
+  set((state) => {
+    // Create default columns
+    const todoId = `${board.id}-To do`;
+    const doingId = `${board.id}-In Progress`;
+    const doneId = `${board.id}-Done`;
+
+    return {
+      boards: {
+        ...state.boards,
+        [board.id]: {
+          ...board,
+          columnIds: [todoId, doingId, doneId],
+        },
+      },
+
+      columns: {
+        ...state.columns,
+
+        [todoId]: {
+          id: todoId,
+          boardId: board.id,
+          title: "To Do",
+          taskIds: [],
+          color: "#3b82f6"
+        },
+
+        [doingId]: {
+          id: doingId,
+          boardId: board.id,
+          title: "In Progress",
+          taskIds: [],
+          color: '#F59E0B'
+        },
+
+        [doneId]: {
+          id: doneId,
+          boardId: board.id,
+          title: "Done",
+          taskIds: [],
+          color: '#10B981'
+        },
+      },
+
       boardsVersion: state.boardsVersion + 1,
-    })),
+    };
+  }),
 
   updateBoard: (boardId, updates) => {
     console.log('Store updateBoard called:', boardId, updates);
@@ -78,10 +125,98 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       selectedBoardId: boardId,
     })),
 
-  addTask: (task) =>
-    set((state) => ({
+// =========================
+// Column Actions
+// =========================
+
+addColumn: (column) =>
+  set((state) => ({
+    columns: {
+      ...state.columns,
+      [column.id]: column,
+    },
+
+    boards: {
+      ...state.boards,
+      [column.boardId]: {
+        ...state.boards[column.boardId],
+        columnIds: [
+          ...state.boards[column.boardId].columnIds,
+          column.id,
+        ],
+        updatedAt: new Date().toISOString(),
+      },
+    },
+
+    boardsVersion: state.boardsVersion + 1,
+  })),
+
+updateColumn: (columnId, updates) =>
+  set((state) => ({
+    columns: {
+      ...state.columns,
+      [columnId]: {
+        ...state.columns[columnId],
+        ...updates,
+      },
+    },
+  })),
+
+deleteColumn: (columnId) =>
+  set((state) => {
+    const column = state.columns[columnId];
+
+    if (!column) return {};
+
+    // Remove the column
+    const { [columnId]: deletedColumn, ...remainingColumns } =
+      state.columns;
+
+    // Remove the column id from its board
+    const board = state.boards[column.boardId];
+
+    return {
+      columns: remainingColumns,
+
+      boards: {
+        ...state.boards,
+        [column.boardId]: {
+          ...board,
+          columnIds: board.columnIds.filter(
+            (id) => id !== columnId
+          ),
+          updatedAt: new Date().toISOString(),
+        },
+      },
+
+      boardsVersion: state.boardsVersion + 1,
+    };
+  }),
+
+addTask: (task) =>
+  set((state) => {
+    const column = state.columns[task.columnId];
+    if (!column) return state;
+    
+    return {
       tasks: { ...state.tasks, [task.id]: task },
-    })),
+      columns: {
+        ...state.columns,
+        [task.columnId]: {
+          ...column,
+          taskIds: [...column.taskIds, task.id]  // ADD THIS
+        }
+      },
+      boards: {
+        ...state.boards,
+        [task.boardId]: {
+          ...state.boards[task.boardId],
+          updatedAt: new Date().toISOString()  // AND THIS
+        }
+      }
+    };
+  }),
+
 
   moveTask: (taskId, newColumnId) =>
     set((state) => {
