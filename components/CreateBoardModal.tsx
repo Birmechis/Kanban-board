@@ -33,7 +33,6 @@ export default function CreateBoardModal({ visible, onClose, onSave}: CreateBoar
     }
 
     const handleCancel = () => {
-     console.log('handleCancel called');
      setTitle('');
      setSelectedIcon('📋');
      setSelectedColor('#7C3AED');

@@ -8,6 +8,7 @@ type BoardState = {
   tasks: Record<string, Task>;
   selectedBoardId: string;
   searchQuery: string;
+  boardsVersion: number; // Add version tracking
 
   //board actions
   addBoard: (board: Board) => void;
@@ -33,25 +34,44 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   tasks: {},
   selectedBoardId: "",
   searchQuery: "",
+  boardsVersion: 0,
 
   addBoard: (board) =>
     set((state) => ({
       boards: { ...state.boards, [board.id]: board },
+      boardsVersion: state.boardsVersion + 1,
     })),
 
-  updateBoard: (boardId, updates) => 
-    set((State) => ({
-      boards: {
+  updateBoard: (boardId, updates) => {
+    console.log('Store updateBoard called:', boardId, updates);
+    set((State) => {
+      const updatedBoards = {
         ...State.boards,
         [boardId]: {...State.boards[boardId], ...updates, updatedAt: new Date().toISOString() },
-      }
-    })),
+      };
+      console.log('Updated boards:', Object.keys(updatedBoards));
+      return { 
+        boards: updatedBoards,
+        boardsVersion: State.boardsVersion + 1,
+      };
+    });
+  },
   
-  deleteBoard: (boardId) => 
+  deleteBoard: (boardId) => {
+    console.log('Store deleteBoard called for boardId:', boardId);
     set((state) => {
-      const {[boardId]: _, ...remainingBoards } = state.boards;
-      return { boards: remainingBoards };
-    }),  
+      console.log('Current boards before delete:', Object.keys(state.boards));
+      const {[boardId]: deletedBoard, ...remainingBoards } = state.boards;
+      console.log('Deleted board:', deletedBoard);
+      console.log('Remaining boards after delete:', Object.keys(remainingBoards));
+      console.log('New boardsVersion:', state.boardsVersion + 1);
+      return { 
+        boards: remainingBoards,
+        boardsVersion: state.boardsVersion + 1,
+      };
+    });
+    console.log('Delete operation complete');
+  },  
 
   setSelectedBoard: (boardId) =>
     set(() => ({
