@@ -22,8 +22,8 @@ const handleLogin = async() => {
     return;
   }
 
-  if(password.length){
-    Alert.alert('Error', 'Password must e at least 6 character')
+  if(password.length < 6){
+    Alert.alert('Error', 'Password must be at least 6 character')
     return
   }
 
