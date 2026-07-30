@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LoginCredentials, User } from '../types/types';
 
-const AUth_TOKEN_KEY = "kanban"
+const AUTH_TOKEN_KEY = "kanban"
 const USER_DATA_KEY = "Data-kanban"
 
 export const authService = {
@@ -17,7 +17,7 @@ export const authService = {
                 token: 'mock-jwt-token-' + Date.now(),
             }
             
-            await AsyncStorage.setItem(AUth_TOKEN_KEY, user.token!)
+            await AsyncStorage.setItem(AUTH_TOKEN_KEY, user.token!)
             await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(user))
 
             return user;
@@ -28,7 +28,7 @@ export const authService = {
 
     async getStoreUser(): Promise<User | any> {
         try {
-            const token = await AsyncStorage.getItem(AUth_TOKEN_KEY)
+            const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY)
             const userData = await AsyncStorage.getItem(USER_DATA_KEY)
 
             if(token && userData){
@@ -43,15 +43,15 @@ export const authService = {
 
     async logout(): Promise<void> {
         try {
-            await AsyncStorage.removeItem(AUth_TOKEN_KEY) 
+            await AsyncStorage.removeItem(AUTH_TOKEN_KEY) 
             await AsyncStorage.removeItem(USER_DATA_KEY) 
         } catch (error) {
-            console.error('Error during logot:', error)
+            console.error('Error during logout:', error)
         }
     },
 
     async validateToken(): Promise<boolean> {
-        const token = await AsyncStorage.getItem(AUth_TOKEN_KEY)
+        const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY)
         return !!token;
     }
 }
