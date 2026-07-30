@@ -23,6 +23,8 @@ type BoardState = {
 
   //task actions
   addTask: (task: Task) => void;
+  updateTask: (taskId: string, updates: Partial<Task>) => void
+  deleteTask: (taskId: string) => void
   moveTask: (taskId: string, newColumnId: string) => void;
 
   //search
@@ -104,21 +106,55 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     });
   },
   
-  deleteBoard: (boardId) => {
-    console.log('Store deleteBoard called for boardId:', boardId);
-    set((state) => {
-      console.log('Current boards before delete:', Object.keys(state.boards));
-      const {[boardId]: deletedBoard, ...remainingBoards } = state.boards;
-      console.log('Deleted board:', deletedBoard);
-      console.log('Remaining boards after delete:', Object.keys(remainingBoards));
-      console.log('New boardsVersion:', state.boardsVersion + 1);
-      return { 
-        boards: remainingBoards,
-        boardsVersion: state.boardsVersion + 1,
-      };
+deleteBoard: (boardId) => {
+  console.log('Store deleteBoard called for boardId:', boardId);
+  set((state) => {
+    const board = state.boards[boardId];
+    if (!board) return state;
+
+    // Step 1: Get all column IDs for this board
+    const columnIdsToDelete = board.columnIds;
+    
+    // Step 2: Get all task IDs from those columns
+    const taskIdsToDelete: string[] = [];
+    columnIdsToDelete.forEach((columnId) => {
+      const column = state.columns[columnId];
+      if (column) {
+        taskIdsToDelete.push(...column.taskIds);
+      }
     });
-    console.log('Delete operation complete');
-  },  
+
+    // Step 3: Remove the board
+    const {[boardId]: deletedBoard, ...remainingBoards } = state.boards;
+
+    // Step 4: Remove all columns belonging to this board
+    const remainingColumns = { ...state.columns };
+    columnIdsToDelete.forEach((columnId) => {
+      delete remainingColumns[columnId];
+    });
+
+    // Step 5: Remove all tasks belonging to those columns
+    const remainingTasks = { ...state.tasks };
+    taskIdsToDelete.forEach((taskId) => {
+      delete remainingTasks[taskId];
+    });
+
+    console.log('Deleted:', {
+      board: boardId,
+      columns: columnIdsToDelete.length,
+      tasks: taskIdsToDelete.length
+    });
+
+    return { 
+      boards: remainingBoards,
+      columns: remainingColumns,
+      tasks: remainingTasks,
+      boardsVersion: state.boardsVersion + 1,
+    };
+  });
+  console.log('Delete operation complete');
+},
+  
 
   setSelectedBoard: (boardId) =>
     set(() => ({
@@ -216,7 +252,55 @@ addTask: (task) =>
       }
     };
   }),
+ 
+ updateTask: (taskId, updates) =>
+  set((state) => {
+    const task = state.tasks[taskId]
+    if (!task)  return state
 
+    return {
+      tasks: {
+        ...state.tasks,
+        [taskId]: { ...task, ...updates }
+      },
+      boards: {
+        ...state.boards,
+        [task.boardId]: {
+          ...state.boards[task.boardId],
+          updatedAt: new Date().toISOString()
+        }
+      }
+    }
+  }),
+
+  deleteTask: (taskId) => 
+    set((state) => {
+      const task = state.tasks[taskId]
+      if(!task) return state;
+
+      const { [taskId]: deletedTask, ...remainingTasks } = state.tasks
+
+      const column = state.columns[task.columnId]
+      const updatedColumn = {
+        ...column,
+        taskId: column.taskIds.filter(id => id !== taskId)
+      }
+
+      return {
+        tasks: remainingTasks,
+        columns: {
+          ...state.columns,
+          [task.columnId]: updatedColumn
+        },
+        boards: {
+          ...state.boards,
+          [task.boardId]: {
+            ...state.boards[task.boardId],
+            updatedAt:new Date().toISOString()
+          }
+        }
+      }
+    }),
 
   moveTask: (taskId, newColumnId) =>
     set((state) => {
