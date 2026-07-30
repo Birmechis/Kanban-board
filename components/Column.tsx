@@ -1,7 +1,7 @@
 import { useBoardStore } from '@/store/useBoardStore';
 import { Task } from '@/types/types';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -25,11 +25,12 @@ type TaskCardProps = {
   drag?: () => void;
 };
 
-const TaskCard = ({ task, drag }: TaskCardProps) => {
+const TaskCard = ({ task, drag, onPress }: TaskCardProps & { onPress?: () => void }) => {
   return (
     <TouchableOpacity 
       style={styles.taskCard}
       onLongPress={drag}
+      onPress={onPress}
       activeOpacity={0.8}
     >
       <View style={styles.taskHeader}>
@@ -82,17 +83,18 @@ const getTagColor = (tag: string): string => {
   return colors[tag] || '#E5E7EB';
 };
 
-export default function Column({ columnId, title, color, boardId, onAddTask }: ColumnProps) {
+export default function Column({ columnId, title, color, onAddTask }: ColumnProps) {
   const tasks = useBoardStore((state) => state.tasks);
-  const moveTask = useBoardStore((state) => state.moveTask);
+  const [editingTask, setEditingtask] = useState<Task | null>(null)
 
   const columnTasks = Object.values(tasks).filter((task) => task.columnId === columnId);
 
   const handleDragEnd = ({ data }: { data: Task[] }) => {
-    // Update task order in the store if needed
-    data.forEach((task, index) => {
-      // You can add position tracking here if needed
-    });
+   const updateColumn = useBoardStore.getState().updateColumn
+
+   const newTaskIds = data.map(task => task.id)
+
+   updateColumn(columnId, { taskIds: newTaskIds})
   };
 
   // For web, use ScrollView
@@ -143,7 +145,11 @@ export default function Column({ columnId, title, color, boardId, onAddTask }: C
         data={columnTasks}
         keyExtractor={(item) => item.id}
         renderItem={({ item, drag }) => (
-          <TaskCard task={item} drag={drag} />
+          <TaskCard 
+            task={item} 
+            drag={drag}
+            onPress={() => setEditingtask(item)} 
+          />
         )}
         onDragEnd={handleDragEnd}
         contentContainerStyle={styles.taskList}
