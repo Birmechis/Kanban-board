@@ -22,8 +22,8 @@ const handleLogin = async() => {
     return;
   }
 
-  if(password.length < 6){
-    Alert.alert('Error', 'Password must be at least 6 character')
+  if(password.length < 8){
+    Alert.alert('Error', 'Password must be at least 8 characters')
     return
   }
 
@@ -55,15 +55,21 @@ return (
                        placeholder='Enter your email'
                        value={email}
                        onChangeText={setEmail}
+                       keyboardType="email-address"
+                       autoCapitalize="none"
+                       autoCorrect={false}
                     />
                 </View>
                 <View style={styles.inputContainer}>
-                    <Text style={styles.label}>password</Text>
+                    <Text style={styles.label}>Password</Text>
                     <TextInput
                        style={styles.input}
                        placeholder='Enter your password'
                        value={password}
                        onChangeText={setPassword}
+                       secureTextEntry
+                       autoCapitalize="none"
+                       autoCorrect={false}
                     />
                 </View>
 
