@@ -1,24 +1,32 @@
-import { Redirect } from 'expo-router';
+import { useAuthStore } from "@/store/useAuthStore";
+import { Redirect } from "expo-router";
+import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { useAuthStore } from '../store/useAuthStore';
 
 export default function Index() {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007aff" />
       </View>
     );
   }
 
-  // Redirect based on authentication status
-  return <Redirect href={isAuthenticated ? '/(tabs)' : '/login'} />;
+  if (isAuthenticated) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <Redirect href="/login" />;
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
