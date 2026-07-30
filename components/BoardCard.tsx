@@ -1,12 +1,13 @@
 import { Board } from "@/types/types";
 import { Ionicons } from '@expo/vector-icons';
+import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type BoardCardProps = {
     board: Board;
-    onMenuPress: (board: Board) => void;
+    onMenuPress: (board: Board) => void; 
 };
 
 
@@ -27,7 +28,9 @@ export default function BoardCard({ board, onMenuPress}: BoardCardProps) {
             <View style={styles.info}>
                 <Text style={styles.title}>{board.title}</Text>
                 <Text style={styles.taskCount}>{board.taskCount}</Text>
-                <Text style={styles.updated}>{board.updatedAt}</Text>
+                <Text style={styles.updated}>
+                 {formatDistanceToNow(new Date(board.updatedAt), {addSuffix: true})}
+                </Text>
             </View>
 
             <Pressable

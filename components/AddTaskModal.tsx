@@ -3,14 +3,14 @@ import { Task } from "@/types/types";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 type AddTaskModalProps = {
@@ -30,7 +30,7 @@ export default function AddTaskModal({
   const [description, setDescription] = useState("");
   const [selectedColumn, setSelectedColumn] = useState(columnId);
   const [selectedLabel, setSelectedLabel] = useState<Task['tag']>('Design');
-  const [dueDate, setDueDate] = useState("May 27, 2024");
+  const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Medium');
   const [showColumnPicker, setShowColumnPicker] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
@@ -50,6 +50,12 @@ export default function AddTaskModal({
     Development: '#3B82F6',
     Bug: '#EF4444',
     Task: '#6B7280',
+  };
+
+  const getDateString = (daysFromNow: number): string => {
+    const date = new Date()
+    date.setDate(date.getDate() + daysFromNow)
+    return date.toISOString().split('T')[0]
   };
 
   const handleSave = () => {
@@ -222,6 +228,58 @@ export default function AddTaskModal({
           {/* Due Date */}
           <View style={styles.section}>
             <Text style={styles.label}>Due Date</Text>
+            <View style = {styles.quickDateContainer}>
+              <TouchableOpacity
+                 style={styles.quickDateButton}
+                 onPress={() => setDueDate(getDateString(0))}
+              >
+                 <Text style={styles.quickDateText}>Today</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                 style={styles.quickDateButton}
+                 onPress={() => setDueDate(getDateString(1))}
+              >
+                 <Text style={styles.quickDateText}>Tomorrow</Text>
+              </TouchableOpacity>
+  
+              <TouchableOpacity 
+                 style={styles.quickDateButton}
+                 onPress={() => setDueDate(getDateString(7))}
+              >
+                 <Text style={styles.quickDateText}>Next Week</Text>
+              </TouchableOpacity>
+            </View>
+
+              <View style={styles.dateInputContainer}>
+    <View style={styles.selectorLeft}>
+      <Ionicons name="calendar-outline" size={20} color="#6B7280" />
+      <TextInput
+        style={styles.dateInput}
+        placeholder="YYYY-MM-DD"
+        placeholderTextColor="#9CA3AF"
+        value={dueDate}
+        onChangeText={setDueDate}
+        maxLength={10}
+      />
+    </View>
+    {dueDate && (
+      <TouchableOpacity onPress={() => setDueDate("")}>
+        <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+      </TouchableOpacity>
+    )}
+  </View>
+  
+  {dueDate && (
+    <Text style={styles.datePreview}>
+      Due: {new Date(dueDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })}
+    </Text>
+  )}
+
             <View style={styles.dateSelector}>
               <View style={styles.selectorLeft}>
                 <Ionicons name="calendar-outline" size={20} color="#6B7280" />
@@ -503,4 +561,48 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#EF4444',
   },
+  quickDateContainer: {
+  flexDirection: 'row',
+  gap: 8,
+  marginBottom: 12,
+},
+quickDateButton: {
+  flex: 1,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderRadius: 8,
+  backgroundColor: '#F3F4F6',
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+  alignItems: 'center',
+},
+quickDateText: {
+  fontSize: 13,
+  fontWeight: '600',
+  color: '#374151',
+},
+dateInputContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+  borderRadius: 8,
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+  backgroundColor: '#F9FAFB',
+},
+dateInput: {
+  fontSize: 15,
+  color: '#111827',
+  paddingVertical: 6,
+  flex: 1,
+  marginLeft: 10,
+},
+datePreview: {
+  fontSize: 12,
+  color: '#10B981',
+  marginTop: 6,
+  fontWeight: '500',
+},
 });

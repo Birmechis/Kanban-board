@@ -86,25 +86,32 @@ export default function Home() {
   }
 
   const handleDeleteBoard = (board: Board) => {
-    console.log('handleDeleteBoard called for:', board.id, board.title);
-    setMenuModalVisible(false);
-    Alert.alert(
-      'Delete Board',
-      `Are you sure you want to delete "${board.title}"? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            console.log('Delete confirmed, calling deleteBoard');
-            deleteBoard(board.id);
-            console.log('deleteBoard completed');
-          },
+  console.log('handleDeleteBoard called for:', board.id, board.title);
+  
+  Alert.alert(
+    'Delete Board',
+    `Are you sure you want to delete "${board.title}"? This action cannot be undone.`,
+    [
+      { 
+        text: 'Cancel', 
+        style: 'cancel',
+        onPress: () => setMenuModalVisible(false)
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          console.log('Delete confirmed, calling deleteBoard');
+          deleteBoard(board.id);
+          setMenuModalVisible(false);
+          setSelectedBoard(null); // ADD THIS
+          console.log('deleteBoard completed');
         },
-      ]
-    );
-  };
+      },
+    ]
+  );
+};
+
 
   const handleMenuPress = (board: Board) => {
     setSelectedBoard(board);
@@ -157,7 +164,7 @@ export default function Home() {
                 <View style={styles.emptyState}>
                     <Ionicons name="folder-open-outline" size={64} color="#ccc" />
                     <Text style={styles.emptyStateText}>
-                        {searchQuery ? 'Np boards found' : 'No boards yet'}
+                        {searchQuery ? 'No boards found' : 'No boards yet'}
                     </Text>
                     <Text style={styles.emptyStateSubtext}>
                         {searchQuery
@@ -168,6 +175,7 @@ export default function Home() {
                 </View>
             ) : (
                 <FlatList
+                  key={`boards-${boardsVersion}`}
                   data={boards}
                   keyExtractor={(item) => item.id}
                   renderItem={({item}) => (
